@@ -50,8 +50,12 @@ module Top (); // {
     reg clock10M, clock12M;
     reg reset;
 
-    wire txd, rxd;
-    wire rts, cts;
+    wire txd0, rxd0;
+    wire rts0, cts0;
+
+    wire txd1, rxd1;
+    wire rts1, cts1;
+
 
     // tbx clkgen
     initial begin
@@ -111,16 +115,18 @@ module Top (); // {
     // Note: Transactor here intentionally shows mismatching baud rate
     // to the DCE to demonstrate that the testbench can override the default
     // baud rate on the transactor to match the DCE.
-    wire[31:0] DBR, DBR1;
-    assign DBR = dceLoopback.DBR;
-    LightUartTransactor #(.obj_index(0)) uartTransactor   (     clock10M,        cts, rts, rxd, txd ,DBR);
-    LightUartTransactor #(.obj_index(1)) uartTransactor1  (     clock10M,        cts, rts, rxd, txd ,DBR);
-    LightUartTransactor #(.obj_index(2)) uartTransactor2  (     clock10M,        cts, rts, rxd, txd ,DBR);
-    LightUartTransactor #(.obj_index(3)) uartTransactor3  (     clock10M,        cts, rts, rxd, txd ,DBR);
+    wire[31:0] DBR0, DBR1;
+    assign DBR0 = dceLoopback0.DBR;
+    assign DBR1 = dceLoopback1.DBR;
+
+    LightUartTransactor #(.obj_index(0)) uartTransactor0  (     clock10M,        cts0, rts0, rxd0, txd0 ,DBR0);
+    LightUartTransactor #(.obj_index(1)) uartTransactor1  (     clock10M,        cts1, rts1, rxd1, txd1 ,DBR1);
 
 
 
-    DceLoopback dceLoopback (        clock10M, reset, rts, cts, txd, rxd );
+    DceLoopback dceLoopback0 (        clock10M, reset, rts0, cts0, txd0, rxd0 );
+    DceLoopback dceLoopback1 (        clock10M, reset, rts1, cts1, txd1, rxd1 );
+
 
     //---------------------------------------------------------------------
     // xFSDB probe

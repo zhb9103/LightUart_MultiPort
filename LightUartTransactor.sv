@@ -148,7 +148,8 @@ initial begin
   wait (filedone==1);
   @ (posedge clk);
   repeat(100)@(posedge clk);
-  $finish;
+  
+  // $finish;
 end
 always @(posedge clk) begin
 if (reset) begin
@@ -239,6 +240,10 @@ end
 import "DPI-C" context function void sendRxToXterm(int obj_index, byte rxData);
 import "DPI-C" context function void xterm_init(int obj_index);
 import "DPI-C" context function byte xterm_transmit_chars(int obj_index);
+
+
+import "DPI-C" context function void billTestIf(int index);
+
 //------------------------------------------------
 
 //--------------------------------------------------
@@ -265,6 +270,9 @@ initial begin
 			rxData[i] = rxd;
 		end
  		sendRxToXterm(obj_index,rxData);
+
+		//$display("sendRxToXterm:%d,%c\n",obj_index,rxData);
+
 		repeat(clocksPerBit)@(posedge clk);		
 	end
 end
@@ -276,7 +284,11 @@ initial begin
 	forever begin
 	    @(posedge clk);
 		txData_c = xterm_transmit_chars(obj_index);
+		
 		if(txData_c>0) begin
+
+		   //$display("xterm_transmit_chars:%d,%c\n",obj_index,txData_c);
+
 		   txBuffer={1'b1,1'b1,1'b1,txData_c,1'b0};
 		   txData = txData_c;
 		   txLock = 1;

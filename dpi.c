@@ -119,8 +119,11 @@ void *read_keystrokes(void *context) {//read character from txfd, and put it in 
          }
          */
 
+	 read(txfd[obj_index], &c, 1);
 
-         read(txfd[obj_index], &c, 1);
+	 //printf("obj:%d->%c\n",obj_index,c);
+
+
 	 write(pipefd[obj_index][1],&c,1);
 //	 if((c == '\n')||(c == '\r')){ //'\n' has different meaning in different systems
 //                tFlag = 1;
@@ -146,6 +149,9 @@ void getbuf(int obj_index,svBitVecVal* buf, int* count, svBit* eom) {
   }
 //  svBit t;
 //  go(t);
+  
+
+
 
   char b[1];
   size_t bytes;
@@ -178,6 +184,9 @@ char xterm_transmit_chars(int obj_index) {
     svScope scope;
     int i;
     char c;
+
+    
+
 #ifdef PURESIM
     if(read(pipefd[obj_index][0], &c, 1) < 0){ 
 		return 0;
@@ -212,9 +221,13 @@ char xterm_transmit_chars(int obj_index) {
 		else return 0;
 	}
 	else{
+                
 		if(read(pipefd[obj_index][0],&c,1)<0){
+			
 			return 0;
 		}
+		//printf("run here obj_index:%d.\n",obj_index);
+
 		fprintf(record_file, "%lld,%d\r\n",counter[obj_index],c);
 		return c;
 	}
@@ -328,6 +341,10 @@ void xterm_init(int obj_index) {
 
 // exported function;
 void sendRxToXterm(int obj_index, char b) {
+
+    //printf("run here obj_index:%d,%c\n",obj_index,b);
+
+
     if((b=='\n')||(b == '\r')){
 			tFlag[obj_index] = 1;
 			write(rxfd[obj_index], "\n\r", 2);

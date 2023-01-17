@@ -71,12 +71,6 @@ putTx(
 //----------------------------------------------------
 // Module: LightUartTransactor
 
-//----------------------------------------------------
-// Module: LightUartTransactor
-
-//----------------------------------------------------
-// Module: LightUartTransactor
-
 // HDL-to-C function call: import getbuf=getbuf
 
 extern void
@@ -105,11 +99,11 @@ extern char
 xterm_transmit_chars(
     int obj_index);
 
-//----------------------------------------------------
-// Module: LightUartTransactor
+// HDL-to-C function call: import billTestIf=billTestIf
 
-//----------------------------------------------------
-// Module: LightUartTransactor
+extern void
+billTestIf(
+    int index);
 
 //----------------------------------------------------
 // Module: LightUartTransactor

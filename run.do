@@ -1,4 +1,6 @@
 #hwtrace autoupload on -tracedir mydir
-run
-waitfor runcomplete
+run 60s
+#waitfor runcomplete
+
+#stop
 quit
