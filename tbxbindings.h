@@ -91,7 +91,9 @@ sendRxToXterm(
 
 extern void
 xterm_init(
-    int obj_index);
+    int obj_index,
+    const svBitVecVal* obj_name,
+    int byte_count);
 
 // HDL-to-C function call: import xterm_transmit_chars=xterm_transmit_chars
 

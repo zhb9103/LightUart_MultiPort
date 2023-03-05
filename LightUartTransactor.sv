@@ -14,7 +14,8 @@ module LightUartTransactor
 	input[31:0]     DBR
 );
 
-parameter int obj_index=0;
+parameter int OBJ_INDEX=0;
+parameter string OBJ_NAME="";
 
 localparam CHARACTER_WIDTH = 8;
 
@@ -218,7 +219,7 @@ end
 //    bit [7:0] inbyte;
 //    always @(posedge clk) begin
 //          if(remaining==0 && eom==0)
-//              getbuf(obj_index, stream, remaining, eom);
+//              getbuf(OBJ_INDEX, stream, remaining, eom);
 //          if(remaining > 0) begin
 //            inbyte = stream[7:0];
 //            remaining--;
@@ -238,19 +239,31 @@ end
 //Import "DPI-C" declareration
 
 import "DPI-C" context function void sendRxToXterm(int obj_index, byte rxData);
-import "DPI-C" context function void xterm_init(int obj_index);
+import "DPI-C" context function void xterm_init(int obj_index,input bit[399:0] obj_name,int byte_count);
 import "DPI-C" context function byte xterm_transmit_chars(int obj_index);
 
 
 import "DPI-C" context function void billTestIf(int index);
 
 //------------------------------------------------
-
+bit[399:0] device_name;
+string temp_device_name;
 //--------------------------------------------------
 //This FSM is free-running 
 initial begin
+        
 	@(posedge clk);
-	xterm_init(obj_index);
+        device_name=0;
+        temp_device_name=OBJ_NAME;
+
+        for(int i=0;i<temp_device_name.len();i++)
+        begin
+          //temp_device_name.getc(i);
+          device_name|=temp_device_name[i];
+          device_name=device_name<<8;
+        end
+	xterm_init(OBJ_INDEX,device_name,temp_device_name.len());
+        $display("hi %s!",temp_device_name);
  	while(1)//not EOT
 		@(posedge clk);
 end
@@ -269,9 +282,9 @@ initial begin
 			repeat(clocksPerBit)@(posedge clk);
 			rxData[i] = rxd;
 		end
- 		sendRxToXterm(obj_index,rxData);
+ 		sendRxToXterm(OBJ_INDEX,rxData);
 
-		//$display("sendRxToXterm:%d,%c\n",obj_index,rxData);
+		//$display("sendRxToXterm:%d,%c\n",OBJ_INDEX,rxData);
 
 		repeat(clocksPerBit)@(posedge clk);		
 	end
@@ -283,11 +296,11 @@ initial begin
 	@(posedge clk);
 	forever begin
 	    @(posedge clk);
-		txData_c = xterm_transmit_chars(obj_index);
+		txData_c = xterm_transmit_chars(OBJ_INDEX);
 		
 		if(txData_c>0) begin
 
-		   //$display("xterm_transmit_chars:%d,%c\n",obj_index,txData_c);
+		   //$display("xterm_transmit_chars:%d,%c\n",OBJ_INDEX,txData_c);
 
 		   txBuffer={1'b1,1'b1,1'b1,txData_c,1'b0};
 		   txData = txData_c;

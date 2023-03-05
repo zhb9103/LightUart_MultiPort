@@ -13,13 +13,20 @@
 
 extern "C" {
 static int rxfd,txfd;
+
+//static unsigned int currentPid=0;
+
 FILE *uartlog;
+
+
 void *capture_keystrokes(void *context) {
     do {
         char c;
         read(0, &c, 1);
         if (c != '\r') {
           write(txfd, &c, 1);
+	  //printf("my pid:%d",getpid());
+
 	  fputc(c,uartlog);
          }
         
@@ -56,6 +63,7 @@ int main(int argc, char *argv[]) {
 
     //system("/bin/stty raw -echo");
     system("/bin/stty sane ignbrk intr ^k eof ^@");
+
 /*
     if (0 > (rxfd = open ("./uart_fifo/uartfifo", O_RDONLY))) {
         perror("open(./uart_fifo/uartfifo)");
@@ -65,7 +73,8 @@ int main(int argc, char *argv[]) {
         perror("open(./uart_fifo/uartfifo-tx)");
         return -1;
     }
-*/
+*/    
+
     if (0 > (rxfd = open (uartfifo_buffer, O_RDONLY))) {
         perror("open(./uart_fifo/uartfifo)");
         return -1;
@@ -78,7 +87,13 @@ int main(int argc, char *argv[]) {
    
     pthread_create(&tid, NULL, &capture_keystrokes, NULL);
 
-    uartlog = fopen("./uart.log","w+");
+    char tempuartlogfilename[256];
+    memset(tempuartlogfilename,0,256);
+    sprintf(tempuartlogfilename,"./%s.log",argv[2]);
+    //uartlog = fopen("./uart.log","w+");
+    uartlog = fopen(tempuartlogfilename,"w+");
+
+
 //    in_msg  = fopen("./dumpfile", "r");
 //    out_rec = fopen("./offset","r");
 //    res = fscanf(out_rec,"%lld", &offset);
