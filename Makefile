@@ -1,3 +1,10 @@
+
+#LIGHT_UART_GCC ?=g++
+#export LIGHT_UART_GCC
+
+
+
+
 all: clean compile
 
 compile:
@@ -19,5 +26,9 @@ clean:
 	rm -rf work *dir *log  *map *med *map transcript modelsim.ini veloce.wave
 
 
-uart-xterm: uart-xterm.c
-	${GCC_EXE} -Wall -g -o $@ $< -lpthread
+uart-xterm: 
+	#${LIGHT_UART_GCC} -Wall -g -o $@ $< -lpthread
+	${GCC_EXE} -Wall -g -o $@ uart-xterm.c light_uart.cpp -lpthread
+
+
+

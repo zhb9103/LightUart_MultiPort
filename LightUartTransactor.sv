@@ -133,52 +133,54 @@ end
 
 enum {IDLE, LOAD, LOAD_DONE, TRANSFER} State;
 integer cnt;
-integer fd;
+//integer fd;
 bit [7:0] var1;
-bit filedone;
+//bit filedone;
 bit tx_done;
 bit reset;
+
 initial begin
   reset = 1;
-  filedone = 0;
-  fd = $fopen("datafile", "rb");
+  //filedone = 0;
+  //fd = $fopen("datafile", "rb");
   @ (posedge clk);
   repeat(1000)@(posedge clk);
   reset = 0;
   @ (posedge clk);
-  wait (filedone==1);
+  //wait (filedone==1);
   @ (posedge clk);
   repeat(100)@(posedge clk);
   
   // $finish;
 end
+
 always @(posedge clk) begin
 if (reset) begin
     cnt = 0;
     var1 = 0;
-    filedone = 0;
+    //filedone = 0;
     tx_done = 1;
 end
 else begin
     case (State)
-      IDLE: 
-            if (filedone == 0) State = LOAD;
-            else State 	= IDLE;
+      //IDLE: 
+            //if (filedone == 0) State = LOAD;
+            //else State 	= IDLE;
       LOAD: 
       begin 
-            cnt 	= $fread(var1, fd); 
+            //cnt 	= $fread(var1, fd); 
             State 	= LOAD_DONE;
       end
       LOAD_DONE:
       begin 
          if (cnt == 0) begin
-            filedone = 1;
+            //filedone = 1;
             $display("Binary file transfer completed @time %t", $time);
             State = IDLE;
          end
          else begin
 //            $display("cnt = %d, var1=%h", cnt, var1);
-            filedone = 0;
+            //filedone = 0;
             State = TRANSFER;
          end
       end
@@ -263,7 +265,7 @@ initial begin
           device_name=device_name<<8;
         end
 	xterm_init(OBJ_INDEX,device_name,temp_device_name.len());
-        $display("hi %s!",temp_device_name);
+        //$display("hi %s!",temp_device_name);
  	while(1)//not EOT
 		@(posedge clk);
 end
@@ -292,7 +294,7 @@ end
 initial begin
         txBuffer = 12'hfff;
 	@(posedge clk);
-        wait (filedone == 1);
+        //wait (filedone == 1);
 	@(posedge clk);
 	forever begin
 	    @(posedge clk);

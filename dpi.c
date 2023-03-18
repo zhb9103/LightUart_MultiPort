@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "string.h"
+#include "errno.h"
+#include "dirent.h"
 #include <unistd.h>
 #include <pthread.h>
 #include "svdpi.h"
@@ -303,7 +305,7 @@ void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count) {
     svScope tempSvScope=svGetScope();
     const char* tempSvScopeName;
     tempSvScopeName=svGetNameFromScope(tempSvScope);
-    printf("Getted scope name is:%s\n",tempSvScopeName);
+    //printf("Getted scope name is:%s\n",tempSvScopeName);
     //
     int in=0;
     char* str1[100];
@@ -322,7 +324,7 @@ void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count) {
     }
     if(in>0)
     {
-      printf("entry is:%s\n",str1[in-1]);
+      //printf("entry is:%s\n",str1[in-1]);
     }
     //str1=strtok_r(tempSvScopeName,".",&str2);
    
@@ -356,7 +358,7 @@ void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count) {
       memset(obj_name_buffer[temp_i],0,256);
     }
 
-    read_config("uart-xterm.cfg");
+    //read_config("uart-xterm.cfg");
 
 /*
     for(int temp_i=0;temp_i<OBJ_NUMBER;temp_i++)
@@ -374,7 +376,7 @@ void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count) {
     printf("cur:%d,name:%s\n",sel_item,obj_name);
 */
 
-    memcpy(obj_name,obj_name_buff[obj_index],strlen(obj_name_buff[obj_index]));
+    //memcpy(obj_name,obj_name_buff[obj_index],strlen(obj_name_buff[obj_index]));
 
 
     char uartfifo_buffer[256];
@@ -407,6 +409,16 @@ void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count) {
 */
 
     pthread_t tid;
+
+    // check uart_fifo directory;
+    if(opendir("./uart_fifo")==NULL)
+    {
+      // dir is exist;
+      //printf("---------------------uart_fifo is not exist!\n");
+      int ret;
+      ret=mkdir("./uart_fifo", S_IWUSR | S_IRUSR | S_IXUSR);
+
+    }
 
     unlink(uartfifo_buffer);//delete /tmp/uartfifo
     if (0 != mkfifo(uartfifo_buffer, 0644)) {
@@ -504,7 +516,9 @@ void sendRxToXterm(int obj_index, char b) {
 	}
 	else{
 		if(line_start_flag[obj_index] == 1){				
-			sprintf(time_info,"%ld ns->%d: ",time_in_ns2(),obj_index);
+			//sprintf(time_info,"%ld ns->%d: ",time_in_ns2(),obj_index);
+			//sprintf(time_info,"->");
+
 			line_start_flag[obj_index] = 0;
 			write(rxfd[obj_index],time_info,25);
 			write(rxfd[obj_index], &b, 1);

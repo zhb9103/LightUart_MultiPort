@@ -10,14 +10,10 @@
 #include <stdlib.h>
 #include "string.h"
 #include <pthread.h>
+#include "light_uart.h"
 
-extern "C" {
 static int rxfd,txfd;
-
-//static unsigned int currentPid=0;
-
-FILE *uartlog;
-
+LightUart *pLightUartObj; 
 
 void *capture_keystrokes(void *context) {
     do {
@@ -27,59 +23,49 @@ void *capture_keystrokes(void *context) {
           write(txfd, &c, 1);
 	  //printf("my pid:%d",getpid());
 
-	  fputc(c,uartlog);
+	  fputc(c,pLightUartObj->uartlog);
          }
         
     } while (1);
     return NULL;
 }
 
-FILE *in_msg;
-FILE *out_rec;
+
+
+
+
+
 
 int main(int argc, char *argv[]) {
-    char c;
-    char buffer[10];
     pthread_t tid;
-    long long int offset;
-    int res = 0;
-    char uartfifo_buffer[256];
-    char uartfifo_tx_buffer[256];
+ 
+    pLightUartObj=new LightUart();
+    char *tempVersion=pLightUartObj->GetVersion();
+    printf("Ver:%s\n",tempVersion);
+    pLightUartObj->InitAll();
 
-/*
-    if(argc!=2)
+
+    if(argc!=3)
     {
 
       perror("parameter error!");
 
       return -1;
     }
-*/
 
-    memset(uartfifo_buffer,0,256);
-    memset(uartfifo_tx_buffer,0,256);
-    sprintf(uartfifo_buffer,"./uart_fifo/uartfifo_%s",argv[1]);
-    sprintf(uartfifo_tx_buffer,"./uart_fifo/uartfifo-tx_%s",argv[1]);
+
+    sprintf(pLightUartObj->uartfifo_buffer,"./uart_fifo/uartfifo_%s",argv[1]);
+    sprintf(pLightUartObj->uartfifo_tx_buffer,"./uart_fifo/uartfifo-tx_%s",argv[1]);
 
     //system("/bin/stty raw -echo");
     system("/bin/stty sane ignbrk intr ^k eof ^@");
 
-/*
-    if (0 > (rxfd = open ("./uart_fifo/uartfifo", O_RDONLY))) {
-        perror("open(./uart_fifo/uartfifo)");
-        return -1;
-    }
-    if (0 > (txfd = open ("./uart_fifo/uartfifo-tx", O_WRONLY))) {
-        perror("open(./uart_fifo/uartfifo-tx)");
-        return -1;
-    }
-*/    
 
-    if (0 > (rxfd = open (uartfifo_buffer, O_RDONLY))) {
+    if (0 > (rxfd = open (pLightUartObj->uartfifo_buffer, O_RDONLY))) {
         perror("open(./uart_fifo/uartfifo)");
         return -1;
     }
-    if (0 > (txfd = open (uartfifo_tx_buffer, O_WRONLY))) {
+    if (0 > (txfd = open (pLightUartObj->uartfifo_tx_buffer, O_WRONLY))) {
         perror("open(./uart_fifo/uartfifo-tx)");
         return -1;
     }
@@ -87,56 +73,20 @@ int main(int argc, char *argv[]) {
    
     pthread_create(&tid, NULL, &capture_keystrokes, NULL);
 
-    char tempuartlogfilename[256];
-    memset(tempuartlogfilename,0,256);
-    sprintf(tempuartlogfilename,"./%s.log",argv[2]);
-    //uartlog = fopen("./uart.log","w+");
-    uartlog = fopen(tempuartlogfilename,"w+");
+    sprintf(pLightUartObj->tempuartlogfilename,"./%s.log",argv[2]);
+
+    pLightUartObj->uartlog = fopen(pLightUartObj->tempuartlogfilename,"w+");
 
 
-//    in_msg  = fopen("./dumpfile", "r");
-//    out_rec = fopen("./offset","r");
-//    res = fscanf(out_rec,"%lld", &offset);
-//
-//    fprintf(uartlog, "Offset read from offset file is: %lld\n",offset);
-//    fclose(out_rec);
-//    fseek(in_msg, offset, SEEK_SET);
-//    out_rec = fopen("./offset","w+");
-//    fread(buffer, sizeof(char), 1, in_msg);
-//    offset = ftell(in_msg);
-//    fprintf(uartlog, "0Now offset is: %lld\n",offset);
-//    while (!feof(in_msg)) {
-//      offset = ftell(in_msg);
-////      fprintf(uartlog, "1Now offset is: %lld\r\n",offset);
-//      c = buffer[0];
-////      fprintf(uartlog, "1 readout c is: %c\r\n",c);
-//      if ((c != '\r')  && ( (int) c != 0)) {
-//        write(txfd, &c, 1);  
-//      }
-//
-//      fseek(out_rec,0,SEEK_SET);
-//      offset = ftell(in_msg);
-// //     fprintf(uartlog, "2Now offset is: %lld\r\n",offset);
-//      fflush(uartlog);
-//      fprintf(out_rec, "%lld\r\n",offset);
-//      fflush(out_rec);
-//      fread(buffer, sizeof(char), 1, in_msg);
-//    }
-////    fprintf(uartlog,"Exiting while loop\n");
-//    fflush(uartlog);
-//    fclose(in_msg);
-//    fclose(out_rec);
-    
-
-    while (read(rxfd,&c,1) == 1) {
-        write(1,&c,1);
-      if ((c != '\r')  && ( (int) c != 0)) {
-	fputc(c,uartlog);
-        fflush(uartlog);
+    while (read(rxfd,&pLightUartObj->c,1) == 1) {
+        write(1,&pLightUartObj->c,1);
+      if ((pLightUartObj->c != '\r')  && ( (int) pLightUartObj->c != 0)) {
+	fputc(pLightUartObj->c,pLightUartObj->uartlog);
+        fflush(pLightUartObj->uartlog);
       }
     }
-    fclose(uartlog);
+    fclose(pLightUartObj->uartlog);
 
     return 0;
 }
-}
+
