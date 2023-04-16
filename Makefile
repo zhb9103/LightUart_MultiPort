@@ -14,7 +14,7 @@ compile:
 	velcomp -top Top 
 
 
-build: uart-xterm
+build: 
 	velhvl -sim veloce -64bit_runtime -cfiles ${TBX_HOME}/include/tbx_main.cxx dpi.c
 
 
@@ -23,12 +23,13 @@ run:
 
 
 clean:
-	rm -rf work *dir *log  *map *med *map transcript modelsim.ini veloce.wave
+	rm -rf work *dir *log  *map *med *map transcript modelsim.ini veloce.wave veloce.*.tar.gz
 
 
-uart-xterm: 
+build_uart: 
 	#${LIGHT_UART_GCC} -Wall -g -o $@ $< -lpthread
-	${GCC_EXE} -Wall -g -o $@ uart-xterm.c light_uart.cpp -lpthread
+	rm -rf uart-xterm
+	${GCC_EXE} -Wall -g -o uart-xterm uart-xterm.c light_uart.cpp queue_obj.cpp -lpthread
 
 
 
