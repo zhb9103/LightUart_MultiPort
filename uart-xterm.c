@@ -32,6 +32,7 @@ void *capture_keystrokes(void *context)
   do 
   {
     char c;
+    // stdin;
     read(0, &c, 1);
        
     if (c != '\r') 

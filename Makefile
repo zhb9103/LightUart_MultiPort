@@ -31,5 +31,8 @@ build_uart:
 	rm -rf uart-xterm
 	${GCC_EXE} -Wall -g -o uart-xterm uart-xterm.c light_uart.cpp queue_obj.cpp -lpthread
 
+clean_tcp_server:
+	ps -ef | grep tcp_server.jar | awk '{print $2}' | xargs kill -9
+
 
 

@@ -92,6 +92,7 @@ sendRxToXterm(
 extern void
 xterm_init(
     int obj_index,
+    int term_type,
     const svBitVecVal* obj_name,
     int byte_count);
 

@@ -50,6 +50,11 @@ public:
   int bufidx[OBJ_NUMBER];
   int tFlag[OBJ_NUMBER];
   int line_start_flag[OBJ_NUMBER];
+  // terminal type:
+  // 0: user operate directly;
+  // 1: xterm;
+  // 2: tcp server;
+  int term_type[OBJ_NUMBER];
   //#ifndef PURESIME
   //
   unsigned long long events[OBJ_NUMBER][8000];
@@ -128,7 +133,7 @@ unsigned long long time_in_ns2()
 extern "C" 
 {
   void getbuf(int obj_index,svBitVecVal* buf, int* count, svBit* eom);
-  void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count);
+  void xterm_init(int obj_index,int term_type,const svBitVecVal* obj_name_bits,int byte_count);
   char xterm_transmit_chars(int obj_index);
   void sendRxToXterm(int obj_index, char b);
 }
@@ -313,11 +318,12 @@ void read_config(char* file_path)
 
 
 // exported function;
-void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count) 
+void xterm_init(int obj_index,int term_type,const svBitVecVal* obj_name_bits,int byte_count) 
 {
 
   int sel_item=obj_index;
   char obj_name_bytes[50];
+  LightUart_DPI_Obj.term_type[obj_index]=term_type;
 
   svScope tempSvScope=svGetScope();
   const char* tempSvScopeName;
@@ -408,7 +414,7 @@ void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count)
   sprintf(uartfifo_buffer,"./uart_fifo/uartfifo_%d",sel_item);
   sprintf(uartfifo_tx_buffer,"./uart_fifo/uartfifo-tx_%d",sel_item);
 
-  sprintf(uart_xterm_buffer,"xterm -T \"%s\" -e ./uart-xterm %d %s&",LightUart_DPI_Obj.obj_name_buff[obj_index],sel_item,LightUart_DPI_Obj.obj_name_buff[obj_index]);
+
 
 
   pthread_t tid;
@@ -442,7 +448,29 @@ void xterm_init(int obj_index,const svBitVecVal* obj_name_bits,int byte_count)
   	exit(1);
   }
   //system("xterm -e ./uart-xterm 1&");//open a new xterm and run uart-xterm
-  system(uart_xterm_buffer);
+  switch(LightUart_DPI_Obj.term_type[obj_index])
+  {
+    default:
+    case 0:
+    {
+      // user operate directly;
+      break;
+    }
+    case 1:
+    {
+      // startup xterm;
+      sprintf(uart_xterm_buffer,"xterm -T \"%s\" -e ./uart-xterm %d %s&",LightUart_DPI_Obj.obj_name_buff[obj_index],sel_item,LightUart_DPI_Obj.obj_name_buff[obj_index]);
+      system(uart_xterm_buffer);
+      break;
+    }
+    case 2:
+    {
+      // startup tcp server;
+      sprintf(uart_xterm_buffer,"java -jar tcp_server.jar %s %s %s %d&",LightUart_DPI_Obj.obj_name_buff[obj_index],uartfifo_buffer,uartfifo_tx_buffer,9600+obj_index);
+      system(uart_xterm_buffer);
+      break;
+    }
+  }
 
   if (0 > (LightUart_DPI_Obj.rxfd[obj_index] = open (uartfifo_buffer, O_WRONLY))) {
       perror("open(./uart_fifo/uartfifo)");

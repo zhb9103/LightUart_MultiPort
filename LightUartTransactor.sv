@@ -15,6 +15,7 @@ module LightUartTransactor
 );
 
 parameter int OBJ_INDEX=0;
+parameter int TERM_TYPE=1;
 parameter string OBJ_NAME="";
 
 localparam CHARACTER_WIDTH = 8;
@@ -241,7 +242,7 @@ end
 //Import "DPI-C" declareration
 
 import "DPI-C" context function void sendRxToXterm(int obj_index, byte rxData);
-import "DPI-C" context function void xterm_init(int obj_index,input bit[399:0] obj_name,int byte_count);
+import "DPI-C" context function void xterm_init(int obj_index,int term_type,input bit[399:0] obj_name,int byte_count);
 import "DPI-C" context function byte xterm_transmit_chars(int obj_index);
 
 
@@ -264,7 +265,7 @@ initial begin
           device_name|=temp_device_name[i];
           device_name=device_name<<8;
         end
-	xterm_init(OBJ_INDEX,device_name,temp_device_name.len());
+	xterm_init(OBJ_INDEX,TERM_TYPE,device_name,temp_device_name.len());
         //$display("hi %s!",temp_device_name);
  	while(1)//not EOT
 		@(posedge clk);
